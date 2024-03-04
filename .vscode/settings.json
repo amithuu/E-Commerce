@@ -1,6 +1,9 @@
 {
     "cSpell.words": [
+        "dotenv",
         "fastapi",
-        "pydantic"
+        "passlib",
+        "pydantic",
+        "templating"
     ]
 }
