@@ -164,3 +164,49 @@ async def upload_business_logo(file:UploadFile=File(...),
             detail='invalid user to upload file',
         )
     
+
+
+
+@app.post('/upload.product_logo/{id}')
+async def upload_product_logo(file:UploadFile=File(...),
+                              user:user_pydantic=Depends(get_current_user)): # type:ignore
+    
+    FILE_PATH = './static/images/'
+    file_name = file.filename
+    extension = file_name.split('.')[1]
+    
+    if extension not in ['jpg', 'png']:
+        return {'error':'file format incorrect'}
+    
+    token_name = secrets.token_hex(5)+extension
+    generated_name = FILE_PATH+token_name
+    
+    file_content = file.read()
+    
+    with open(generated_name, 'wb') as file:
+        file.write(generated_name)
+        
+    file.close()
+    
+    img = Image.open(generated_name)
+    img = img.resize(size=(200,200))
+    img.save(generated_name)    
+    
+    product = await Product.get(id=id)
+    business = await product.business
+    owner = await business.owner
+    
+    if owner == user:
+        product.product_image = token_name
+        await product.save()
+        
+        product_url = 'localhost:8000'+generated_name[1:]
+        return {
+            'success': True,
+            'image': product_url,
+        }
+        
+    else:
+        raise HTTPException(
+            detail='invalid user to upload file',
+        )
