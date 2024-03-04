@@ -4,6 +4,7 @@
         "fastapi",
         "passlib",
         "pydantic",
-        "templating"
+        "templating",
+        "uploadfile"
     ]
 }
