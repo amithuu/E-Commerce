@@ -108,3 +108,59 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
+
+# this we are writing to upload file in business logo.. 
+from fastapi import File, UploadFile
+from PIL import Image
+import secrets
+from fastapi.staticfiles import StaticFiles
+
+# set up for static files..
+app.mount('/static', StaticFiles(directory='static'), name='static')
+
+
+@app.post('/upload/picture')
+async def upload_business_logo(file:UploadFile=File(...),
+                               user:user_pydantic=Depends(get_current_user)): #type:ignore
+    
+    FILE_PATH = './static/images/'
+    file_name = file.filename
+    
+    extension = file_name.split('.')[1]
+    
+    
+    if extension not in ['jpg', 'png']:
+        return {'error':'file format is wrong'}
+    
+    token_name = secrets.token_hex(5)+'.'+extension
+    generated_name = FILE_PATH+token_name
+    
+    file_content = await file.read()
+    
+    with open(generated_name, 'wb') as file:
+        file.write(file_content)
+
+    img = Image.open(generated_name)
+    img = img.resize(size=(200,200))
+    img.save(generated_name)
+
+    file.close()
+           
+    
+    business = await Business.get(owner = user) 
+    owner  = await business.owner
+    
+    if owner == user:
+        business.logo = token_name
+        await business.save()
+        
+        logo_url='localhost:8000'+generated_name[1:]
+        return {
+            'status':'ok',
+            'logo':logo_url
+        }
+    else:
+        raise HTTPException(
+            detail='invalid user to upload file',
+        )
+    
