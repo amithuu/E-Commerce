@@ -168,7 +168,7 @@ async def upload_business_logo(file:UploadFile=File(...),
 
 
 @app.post('/upload.product_logo/{id}')
-async def upload_product_logo(file:UploadFile=File(...),
+async def upload_product_logo(id:int, file:UploadFile=File(...),
                               user:user_pydantic=Depends(get_current_user)): # type:ignore
     
     FILE_PATH = './static/images/'
