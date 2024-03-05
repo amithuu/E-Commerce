@@ -37,7 +37,7 @@ async def verify_password(plain_password, hashed_password):
 
 async def authenticate_user(username, password):
     user = await User.get(username=username)
-    if user and verify_password(password, user.password):
+    if user and await verify_password(password, user.password):
         return user
     return False
 
